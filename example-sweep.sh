@@ -1,24 +1,23 @@
 #!/bin/bash
+# This script demonstrates how to sweep a parameter
+#
+# Export these variables to execute a sweep
+# - RUNDIR        to collect all files in 1 directory (see below)
+# - RUN_ID        needs to be unique for each measurement
+# - WORKLOAD_CMD  actual workload to call with the parameter
+#
 
 export WORKLOAD_NAME=EXAMPLE-SWEEP
 export DESCRIPTION="Example sweep using dd command"
-export WORKLOAD_DIR="."
-export ESTIMATED_RUN_TIME_MIN=1
-export X_LABEL="Block size [ KB ]"
-export VERBOSE=0  # Turn off most messages
+export WORKLOAD_DIR="."      # The workload working directory
+export MEAS_DELAY_SEC=1      # Delay between each measurement
 
-# When sweeping, collect all files in the same run directory
 export RUNDIR=$(./setup-run.sh $WORKLOAD_NAME)
 
 for BLOCK_SIZE_KB in 128 256 512
 do
-    for ITER in 1 2
-    do
-        export RUN_ID="BLOCK_SIZE_KB=$BLOCK_SIZE_KB.$ITER"
-        export WORKLOAD_CMD="dd if=/dev/zero of=/tmp/tmpfile bs=$((BLOCK_SIZE_KB*1024)) count=1024"
-        ./run-workload.sh
-        # Optionally create new HTML tables here
-        # e.g. for spark workloads:
-        #  ./create_spark_table.py $RUNDIR/html/config.json > $RUNDIR/html/workload.html
-    done
+  export RUN_ID="BSIZE_KB_$BLOCK_SIZE_KB" # A unique label to identify this measurement
+  export WORKLOAD_CMD="./dd_test.sh ${BLOCK_SIZE_KB}k"
+  ./run-workload.sh
 done
+
